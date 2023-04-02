@@ -1,0 +1,48 @@
+import os
+import hashlib
+import binascii
+import bitcoin
+
+# Set the directory path where the user data will be stored
+dir_path = "./user_data"
+
+# Create the directory if it doesn't exist
+if not os.path.exists(dir_path):
+    os.makedirs(dir_path)
+
+def seed_to_privkey(seed_phrase):
+    """Converts seed phrase to private key"""
+
+    # Convert seed phrase to entropy using SHA-256 hash function
+    entropy = hashlib.sha256(seed_phrase.encode()).digest()
+
+    # Generate private key from entropy using Bitcoin's hierarchical deterministic key generation algorithm
+    privkey = bitcoin.bip32_master_key(entropy)
+
+    return privkey
+
+def privkey_to_seed(privkey):
+    """Converts private key to seed phrase"""
+
+    # Get the master private key from the given private key
+    master_privkey = bitcoin.bip32_extract_key(privkey)
+
+    # Convert master private key to seed phrase using SHA-256 hash function
+    seed_phrase = hashlib.sha256(master_privkey.encode()).hexdigest()
+
+    return seed_phrase
+
+# Example usage
+seed_phrase = "example seed phrase"
+privkey = seed_to_privkey(seed_phrase)
+seed_phrase_again = privkey_to_seed(privkey)
+
+print("Seed phrase:", seed_phrase)
+print("Private key:", privkey)
+print("Seed phrase again:", seed_phrase_again)
+
+# Save the user data to a file in the user data directory
+with open(os.path.join(dir_path, "user_data.txt"), "w") as f:
+    f.write("Seed phrase: {}\n".format(seed_phrase))
+    f.write("Private key: {}\n".format(privkey))
+    f.write("Seed phrase again: {}\n".format(seed_phrase_again))
